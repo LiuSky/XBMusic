@@ -10,7 +10,7 @@ import UIKit
 
 
 /// MARK - 音频播放Demo
-class ViewController: UIViewController {
+final class ViewController: UIViewController {
 
     /// 上一首按钮
     private lazy var prebutton: UIButton = {
@@ -49,6 +49,7 @@ class ViewController: UIViewController {
     /// 音频播放控制器
     private lazy var audioPlayerController: AudioPlayerController = {
         let temAudioPlayerController = AudioPlayerController(with: urls)
+        temAudioPlayerController.delegate = self
         return temAudioPlayerController
     }()
     
@@ -87,9 +88,34 @@ class ViewController: UIViewController {
         
         if audioPlayerController.isPlaying() {
             audioPlayerController.pause()
+            playbutton.setTitle("暂停", for: .normal)
         } else {
             audioPlayerController.play()
+            playbutton.setTitle("播放", for: .normal)
         }
+    }
+}
+
+
+// MARK: - AudioPlayerControllerDelegate
+extension ViewController: AudioPlayerControllerDelegate {
+    
+    
+    func audioController(_ audioController: AudioPlayerController, statusChanged state: AudioPlayerState) {
+        debugPrint(state)
+    }
+    
+    func audioController(_ audioController: AudioPlayerController, currentTime: TimeInterval, progress: Float) {
+        debugPrint("当前播放时间:\(currentTime.timeMsString)")
+        debugPrint("播放进度:\(progress)")
+    }
+    
+    func audioController(_ audioController: AudioPlayerController, totalTime: TimeInterval) {
+        debugPrint("总时间:\(totalTime.timeMsString)")
+    }
+    
+    func audioController(_ audioController: AudioPlayerController, bufferProgress: Float) {
+        debugPrint("缓存进度:\(bufferProgress)")
     }
 }
 

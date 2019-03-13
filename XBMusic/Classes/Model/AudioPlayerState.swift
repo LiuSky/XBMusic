@@ -12,6 +12,9 @@ import Foundation
 /// MARK - 音频播放状态
 public enum AudioPlayerState: Int {
 
+    /// 空
+    case none
+    
     ///  加载中
     case loading
 
@@ -44,6 +47,8 @@ extension AudioPlayerState: CustomStringConvertible {
     public var description: String {
         
         switch self {
+        case .none:
+            return "空"
         case .loading:
             return "加载中"
         case .buffering:

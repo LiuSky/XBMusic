@@ -15,6 +15,9 @@ import FreeStreamer
 public class AudioPlayerController: NSObject, AudioSessionProtocol {
     
     /// MARK - public
+    /// 委托
+    public weak var delegate: AudioPlayerControllerDelegate?
+    
     /// 是否启用自动音频会话处理
     public var automaticAudioSessionHandlingEnabled: Bool = true
     
@@ -46,6 +49,16 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     /// 输出音量(默认1)
     private(set) var outputVolume: Float = 1.0
     
+    /// 播放时间刷新率
+    private var playDisplayLink: CADisplayLink?
+    
+    /// 缓冲状态定时器
+    private var bufferTimer: CADisplayLink?
+    
+    /// 播放状态
+    private(set) var playerState: AudioPlayerState = .none
+    
+    
     /// 初始化
     public override init() {
         super.init()
@@ -74,9 +87,11 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     
     /// MARK - 释放
     deinit {
-        self.removeObserver()
-        self.streams.forEach { $0.deactivate() }
-        self.setActive(false)
+        removeObserver()
+        streams.forEach { $0.deactivate() }
+        setActive(false)
+        stopPlayerTimer()
+        stopBufferTimer()
     }
 }
 
@@ -104,62 +119,81 @@ extension AudioPlayerController {
     /// MARK - 音频流状态变化
     @objc private func audioStreamStateDidChange(_ notification: Notification) {
         
-        guard let userInfo = notification.userInfo,
+        guard let object = notification.object as? FSAudioStream,
+              object == audioStream,
+              let userInfo = notification.userInfo,
               let stateInt = userInfo[FSAudioStreamNotificationKey_State] as? Int,
               let state = FSAudioStreamState(rawValue: stateInt) else {
                 return
         }
         
-        
         if state == .fsAudioStreamRetrievingURL {
-            //do thing
-            debugPrint("检索url")
+            playerState = .loading
+            delegate?.audioController(self, statusChanged: playerState)
+        } else if state == .fsAudioStreamBuffering {
+            songSwitchInProgress = false
+            if automaticAudioSessionHandlingEnabled {
+                setCategory(AVAudioSession.Category.playback)
+            }
+            setActive(true)
+            playerState = .buffering
+            delegate?.audioController(self, statusChanged: playerState)
+        } else if state == .fsAudioStreamSeeking {
+            return
+        } else if state == .fsAudioStreamPlaying {
+            
+            let totalTime = self.audioStream.duration.playbackTimeInSeconds * 1000
+            delegate?.audioController(self, totalTime: TimeInterval(totalTime))
+            if playerState != .playing {
+                startPlayerTimer()
+                playerState = .playing
+                delegate?.audioController(self, statusChanged: playerState)
+            }
+        } else if state == .fsAudioStreamPaused && !songSwitchInProgress {
+            
+            debugPrint("没有下一个播放列表项。音频才会停止")
+            playerState = .ended
+            delegate?.audioController(self, statusChanged: playerState)
+            stopPlayerTimer()
+            setActive(false)
+        } else if state == .fsAudioStreamPlaybackCompleted && hasNextItem() {
+            ///这边记得修改播放模式
+            currentPlaylistItemIndex = currentPlaylistItemIndex + 1
+            songSwitchInProgress = true
+            playerState = .switchSong
+            delegate?.audioController(self, statusChanged: playerState)
+            play()
+        } else if state == .fsAudioStreamFailed {
+            playerState = .error
+            delegate?.audioController(self, statusChanged: playerState)
+            setActive(false)
         } else if state == .fsAudioStreamEndOfFile {
             
-            debugPrint("缓冲完成")
+            // 定时器停止后需要再次调用获取进度方法，防止出现进度不准确的情况
+            updateBuffer()
+            stopBufferTimer()
+            
             /// 判断是否预加载下一个
-            if !self.preloadNextPlaylistItemAutomatically {
+            if !preloadNextPlaylistItemAutomatically {
                 return
             }
             
             /// 判断是否有下一个，如果有的话，进入提前预加载
-            if self.hasNextItem() {
+            if hasNextItem() {
                 
-                let proxy = self.streams[currentPlaylistItemIndex + 1]
+                /// 这边记得修改播放模式
+                let proxy = streams[currentPlaylistItemIndex + 1]
                 let nextStream = proxy.audioStream
                 
-                /// 这边记住做成回调判断当前这个需要不需要预加载
-                nextStream.preload()
-            }
-        } else if state == .fsAudioStreamStopped && !self.songSwitchInProgress {
-            
-            debugPrint("没有下一个播放列表项。音频才会停止")
-            //self.setAudioSessionActive(false)
-            
-        } else if state == .fsAudioStreamPlaybackCompleted && self.hasNextItem() {
-            debugPrint("播放完成")
-            self.currentPlaylistItemIndex = self.currentPlaylistItemIndex + 1
-            self.songSwitchInProgress = true
-            self.play()
-        } else if state == .fsAudioStreamFailed {
-            debugPrint("加载流失败")
-            //self.setAudioSessionActive(false)
-        } else if state == .fsAudioStreamBuffering {
-            debugPrint("缓冲中")
-            self.songSwitchInProgress = false
-            
-            if self.automaticAudioSessionHandlingEnabled {
-                
-                if #available(iOS 10.0, *) {
-                    try! AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+                if let temDelegate = delegate {
+                    if temDelegate.audioController(self, allowPreloadingFor: nextStream) {
+                        nextStream.preload()
+                    }
                 } else {
-                    // Workaround until https://forums.swift.org/t/using-methods-marked-unavailable-in-swift-4-2/14949 isn't fixed
-                    AVAudioSession.sharedInstance().perform(NSSelectorFromString("setCategory:error:"), with: AVAudioSession.Category.playback)
+                    nextStream.preload()
                 }
+                delegate?.audioController(self, preloadStartedFor: nextStream)
             }
-            //self.setAudioSessionActive(true)
-        } else if state == .fsAudioStreamPlaying {
-            debugPrint("播放中........")
         }
     }
 }
@@ -215,6 +249,77 @@ extension AudioPlayerController {
             if index != currentActiveStream {
                 item.deactivate()
             }
+        }
+    }
+    
+    
+    /// 开始播放定定时器
+    private func startPlayerTimer() {
+        
+        playDisplayLink?.invalidate()
+        playDisplayLink = CADisplayLink(target: self, selector: #selector(updateTime))
+        playDisplayLink?.frameInterval = 60
+        playDisplayLink?.add(to: RunLoop.current, forMode: .common)
+    }
+    
+    
+    /// 停止播放定时器
+    private func stopPlayerTimer() {
+        playDisplayLink?.invalidate()
+    }
+    
+    
+    /// 刷新计时器
+    @objc private func updateTime() {
+        
+        DispatchQueue.main.async {
+         
+            let currentTimePlayed = self.audioStream.currentTimePlayed
+            let currentTime = TimeInterval(currentTimePlayed.playbackTimeInSeconds * 1000)
+            let progress = currentTimePlayed.position
+            
+            self.delegate?.audioController(self,
+                                           currentTime: TimeInterval(currentTime),
+                                           progress: progress)
+        }
+    }
+    
+    /// 开始进度定时器
+    private func startBufferTimer() {
+        
+        bufferTimer?.invalidate()
+        bufferTimer = CADisplayLink(target: self, selector: #selector(updateBuffer))
+        bufferTimer?.frameInterval = 6
+        bufferTimer?.add(to: RunLoop.current, forMode: .common)
+    }
+    
+    
+    /// 停止进度定时器
+    private func stopBufferTimer() {
+        bufferTimer?.invalidate()
+    }
+    
+    
+    /// 刷新进度
+    @objc private func updateBuffer() {
+        
+        DispatchQueue.main.async {
+            
+            let preBuffer: Float = Float(self.audioStream.prebufferedByteCount)
+            let contentLength: Float = Float(self.audioStream.contentLength)
+            
+            // 这里获取的进度不能准确地获取到1
+            var bufferProgress = contentLength > 0 ? preBuffer / contentLength : 0
+            
+            // 为了能使进度精准到1,做特殊处理
+            let buffer: Int = Int(bufferProgress + 0.5)
+            
+            if bufferProgress > 0.9 && buffer >= 1 {
+                self.stopBufferTimer()
+                // 这里把进度设置为1，防止进度条出现不准确的情况
+                bufferProgress = 1.0
+            }
+            self.delegate?.audioController(self, bufferProgress: bufferProgress)
         }
     }
 }
@@ -382,6 +487,7 @@ extension AudioPlayerController: AudioPlayerProtocol {
     /// MARK - 播放
     public func play() {
         audioStream.play()
+        startBufferTimer()
     }
     
     /// MARK - 停止播放

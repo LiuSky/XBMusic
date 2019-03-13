@@ -13,7 +13,6 @@
 		332F47AD22379D1E00F625BE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 332F47AB22379D1E00F625BE /* Main.storyboard */; };
 		332F47AF22379D2000F625BE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 332F47AE22379D2000F625BE /* Assets.xcassets */; };
 		332F47B222379D2000F625BE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 332F47B022379D2000F625BE /* LaunchScreen.storyboard */; };
-		332F47BC22379D9E00F625BE /* DispatchQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 332F47BB22379D9E00F625BE /* DispatchQueue.swift */; };
 		332F47BE22379DC500F625BE /* AudioSessionProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 332F47BD22379DC500F625BE /* AudioSessionProtocol.swift */; };
 		332F47C322379DF700F625BE /* AudioResources.swift in Sources */ = {isa = PBXBuildFile; fileRef = 332F47C222379DF700F625BE /* AudioResources.swift */; };
 		332F47C522379F2200F625BE /* AudioPlayerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 332F47C422379F2200F625BE /* AudioPlayerState.swift */; };
@@ -21,6 +20,8 @@
 		3333B722223890D600245D49 /* AudioPlayerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3333B721223890D600245D49 /* AudioPlayerProtocol.swift */; };
 		3333B7242238920600245D49 /* AudioPlayerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3333B7232238920600245D49 /* AudioPlayerMode.swift */; };
 		3333B7262238989E00245D49 /* AudioStreamProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3333B7252238989E00245D49 /* AudioStreamProxy.swift */; };
+		3333B7282238DCDF00245D49 /* AudioPlayerControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3333B7272238DCDF00245D49 /* AudioPlayerControllerDelegate.swift */; };
+		3333B72A2238F28300245D49 /* TimeInterval+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3333B7292238F28300245D49 /* TimeInterval+.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,7 +32,6 @@
 		332F47AE22379D2000F625BE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		332F47B122379D2000F625BE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		332F47B322379D2000F625BE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		332F47BB22379D9E00F625BE /* DispatchQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DispatchQueue.swift; sourceTree = "<group>"; };
 		332F47BD22379DC500F625BE /* AudioSessionProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSessionProtocol.swift; sourceTree = "<group>"; };
 		332F47C222379DF700F625BE /* AudioResources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioResources.swift; sourceTree = "<group>"; };
 		332F47C422379F2200F625BE /* AudioPlayerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerState.swift; sourceTree = "<group>"; };
@@ -39,6 +39,8 @@
 		3333B721223890D600245D49 /* AudioPlayerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerProtocol.swift; sourceTree = "<group>"; };
 		3333B7232238920600245D49 /* AudioPlayerMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerMode.swift; sourceTree = "<group>"; };
 		3333B7252238989E00245D49 /* AudioStreamProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioStreamProxy.swift; sourceTree = "<group>"; };
+		3333B7272238DCDF00245D49 /* AudioPlayerControllerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerControllerDelegate.swift; sourceTree = "<group>"; };
+		3333B7292238F28300245D49 /* TimeInterval+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+.swift"; sourceTree = "<group>"; };
 		4FECAB252320DA530828D2D6 /* Pods-XBMusic.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-XBMusic.release.xcconfig"; path = "Target Support Files/Pods-XBMusic/Pods-XBMusic.release.xcconfig"; sourceTree = "<group>"; };
 		91EDA0B7532CF8395AA5D1C6 /* Pods-XBMusic.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-XBMusic.debug.xcconfig"; path = "Target Support Files/Pods-XBMusic/Pods-XBMusic.debug.xcconfig"; sourceTree = "<group>"; };
 		D49F015F61EBCD7B075D95EE /* Pods_XBMusic.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_XBMusic.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -102,8 +104,8 @@
 		332F47BA22379D8F00F625BE /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				332F47BB22379D9E00F625BE /* DispatchQueue.swift */,
 				332F47BD22379DC500F625BE /* AudioSessionProtocol.swift */,
+				3333B7292238F28300245D49 /* TimeInterval+.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -121,6 +123,7 @@
 				332F47C62237A2A900F625BE /* AudioPlayerController.swift */,
 				3333B721223890D600245D49 /* AudioPlayerProtocol.swift */,
 				3333B7252238989E00245D49 /* AudioStreamProxy.swift */,
+				3333B7272238DCDF00245D49 /* AudioPlayerControllerDelegate.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -278,12 +281,13 @@
 			files = (
 				332F47AA22379D1E00F625BE /* ViewController.swift in Sources */,
 				332F47C72237A2A900F625BE /* AudioPlayerController.swift in Sources */,
+				3333B7282238DCDF00245D49 /* AudioPlayerControllerDelegate.swift in Sources */,
 				332F47C322379DF700F625BE /* AudioResources.swift in Sources */,
 				3333B7242238920600245D49 /* AudioPlayerMode.swift in Sources */,
+				3333B72A2238F28300245D49 /* TimeInterval+.swift in Sources */,
 				332F47BE22379DC500F625BE /* AudioSessionProtocol.swift in Sources */,
 				332F47C522379F2200F625BE /* AudioPlayerState.swift in Sources */,
 				3333B722223890D600245D49 /* AudioPlayerProtocol.swift in Sources */,
-				332F47BC22379D9E00F625BE /* DispatchQueue.swift in Sources */,
 				332F47A822379D1E00F625BE /* AppDelegate.swift in Sources */,
 				3333B7262238989E00245D49 /* AudioStreamProxy.swift in Sources */,
 			);
@@ -435,6 +439,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BU9U9E5458;
 				INFOPLIST_FILE = XBMusic/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -454,6 +459,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BU9U9E5458;
 				INFOPLIST_FILE = XBMusic/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
