@@ -149,7 +149,11 @@ extension AudioPlayerController {
                 playerState = .playing
                 delegate?.audioController(self, statusChanged: playerState)
             }
-        } else if state == .fsAudioStreamPaused && !songSwitchInProgress {
+        } else if state == .fsAudioStreamPaused {
+            playerState = .paused
+            delegate?.audioController(self, statusChanged: playerState)
+            stopPlayerTimer()
+        } else if state == .fsAudioStreamStopped && !songSwitchInProgress {
             
             debugPrint("没有下一个播放列表项。音频才会停止")
             playerState = .ended
@@ -486,7 +490,12 @@ extension AudioPlayerController: AudioPlayerProtocol {
     
     /// MARK - 播放
     public func play() {
-        audioStream.play()
+        
+        if playerState == .paused {
+            resume()
+        } else {
+            audioStream.play()
+        }
         startBufferTimer()
     }
     

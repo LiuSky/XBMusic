@@ -88,10 +88,12 @@ final class ViewController: UIViewController {
         
         if audioPlayerController.isPlaying() {
             audioPlayerController.pause()
-            playbutton.setTitle("暂停", for: .normal)
-        } else {
-            audioPlayerController.play()
             playbutton.setTitle("播放", for: .normal)
+        } else {
+            
+            
+            audioPlayerController.play()
+            playbutton.setTitle("暂停", for: .normal)
         }
     }
 }
