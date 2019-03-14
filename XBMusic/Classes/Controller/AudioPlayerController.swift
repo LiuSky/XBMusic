@@ -645,12 +645,12 @@ extension AudioPlayerController: AudioPlayerProtocol {
     public func playNextItem() {
         
         /// 这边注意模式播放方式(后续添加)
-        if self.hasNextItem() {
-            self.songSwitchInProgress = true
-            self.audioStream.stop()
-            self.deactivateInactivateStreams(self.currentPlaylistItemIndex)
-            self.currentPlaylistItemIndex = self.currentPlaylistItemIndex + 1
-            self.play()
+        if hasNextItem() {
+            songSwitchInProgress = true
+            audioStream.stop()
+            deactivateInactivateStreams(currentPlaylistItemIndex)
+            currentPlaylistItemIndex = currentPlaylistItemIndex + 1
+            play()
         }
     }
     
@@ -658,12 +658,12 @@ extension AudioPlayerController: AudioPlayerProtocol {
     public func playPreviousItem() {
         
         /// 这边注意模式播放方式(后续添加)
-        if self.hasPreviousItem() {
-            self.songSwitchInProgress = true
-            self.audioStream.stop()
-            self.deactivateInactivateStreams(self.currentPlaylistItemIndex)
-            self.currentPlaylistItemIndex = self.currentPlaylistItemIndex - 1
-            self.play()
+        if hasPreviousItem() {
+            songSwitchInProgress = true
+            audioStream.stop()
+            deactivateInactivateStreams(currentPlaylistItemIndex)
+            currentPlaylistItemIndex = currentPlaylistItemIndex - 1
+            play()
         }
     }
     
@@ -680,7 +680,7 @@ extension AudioPlayerController: AudioPlayerProtocol {
                                         playbackTimeInSeconds: 0,
                                         position: 0)
         position.position = temProgress
-        self.audioStream.seek(to: position)
+        audioStream.seek(to: position)
     }
     
     /// MARK - 设置播放速率 0.5 - 2.0， 1.0是正常速率
@@ -689,7 +689,7 @@ extension AudioPlayerController: AudioPlayerProtocol {
         var temPlayRate: Float = 1.0
         if playRate < 0.5 { temPlayRate = 0.5 }
         if playRate > 2.0 { temPlayRate = 2.0 }
-        self.audioStream.setPlayRate(temPlayRate)
+        audioStream.setPlayRate(temPlayRate)
     }
     
     /// MARK - 删除所有缓存(目前还不支持单个删除)
