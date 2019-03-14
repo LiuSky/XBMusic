@@ -21,15 +21,11 @@ final class AudioStreamProxy: NSObject {
     /// 音频流
     private(set) lazy var audioStream: FSAudioStream = {
         
-        let config: FSStreamConfiguration
-        if let temConf = self.audioController?.configuration {
-            config = temConf
-        } else {
-            config = FSStreamConfiguration()
-        }
+        let config: FSStreamConfiguration = FSStreamConfiguration()
         
         //禁用音频流的音频会话处理;音频控制器处理它
         config.automaticAudioSessionHandlingEnabled = false
+        config.cacheDirectory = self.audioController?.cacheDirectory
         config.cacheEnabled = self.audioController?.currentPlaylistItem?.cacheEnabled ?? false
         let temAudioStream = FSAudioStream(configuration: config)!
         if self.audioController?.needToSetVolume ?? false,

@@ -75,8 +75,6 @@ final class ViewController: UIViewController {
 
     /// 上一首
     @objc private func eventForPre() {
-        //let vc = AViewController()
-        ///self.navigationController?.pushViewController(vc, animated: true)
         audioPlayerController.playPreviousItem()
     }
     
@@ -106,7 +104,7 @@ extension ViewController: AudioPlayerControllerDelegate {
     
     func audioController(_ audioController: AudioPlayerController, statusChanged state: AudioPlayerState, resources: AudioResources?) {
         debugPrint(state)
-        debugPrint(resources)
+        debugPrint(resources ?? "")
     }
     
     

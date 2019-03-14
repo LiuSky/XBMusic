@@ -24,10 +24,10 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     /// 是否预加载下一个播放列表项
     public var preloadNextPlaylistItemAutomatically: Bool = true
     
-    /// MARK - private
-    /// 配置
-    private(set) lazy var configuration: FSStreamConfiguration = FSStreamConfiguration()
+    /// 缓存路径(默认路径DocumentDirectory)
+    public var cacheDirectory: String!
     
+    /// MARK - private
     /// 当前播放列表索引
     private var currentPlaylistItemIndex: Int = 0
     
@@ -61,7 +61,14 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     /// 初始化
     public override init() {
         super.init()
-        self.addObserver()
+        
+       let paths = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)
+        if paths.count > 0 {
+            cacheDirectory = paths[0]
+        }
+        
+        addObserver()
+        addInterruptionAndRouteChangeNotification()
     }
     
     /// 初始化音频资源
@@ -88,6 +95,7 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     deinit {
         
         removeObserver()
+        removeNotification()
         streams.forEach { $0.deactivate() }
         setActive(false)
         stopPlayerTimer()
@@ -210,6 +218,74 @@ extension AudioPlayerController {
                 delegate?.audioController(self, preloadStartedFor: nextStream)
             }
         }
+    }
+}
+
+
+// MARK: - Add Nocation
+extension AudioPlayerController {
+    
+    /// 添加中断通知和线路改变通知
+    private func addInterruptionAndRouteChangeNotification() {
+        
+        self.removeNotification()
+        NotificationCenter.default.addObserver(self, selector: #selector(self.interruption(notification:)), name: AVAudioSession.interruptionNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.routeChange(notification:)), name: AVAudioSession.routeChangeNotification, object: nil)
+    }
+    
+    /// 移除通知
+    private func removeNotification() {
+        
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.routeChangeNotification, object: nil)
+    }
+    
+    /// 中断通知事件(一般指的是电话接入,或者其他App播放音视频等)
+    @objc private func interruption(notification: NSNotification) {
+        
+        guard let userInfo = notification.userInfo,
+            let typeRawValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+            let type = AVAudioSession.InterruptionType(rawValue: typeRawValue) else {
+                return
+        }
+        
+        switch type {
+        case .began:
+            pause()
+        case .ended:
+            
+            guard let optionRawValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt,
+                AVAudioSession.InterruptionOptions(rawValue: optionRawValue) == .shouldResume else {
+                    return
+            }
+            play()
+        }
+    }
+    
+    
+    /// 线路改变事件(一般指的是耳机的插入拔出)
+    @objc private func routeChange(notification: NSNotification) {
+        
+        guard let userInfo = notification.userInfo,
+            let typeRawValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
+            let type = AVAudioSession.RouteChangeReason(rawValue: typeRawValue) else {
+                return
+        }
+        
+        
+        if type == .oldDeviceUnavailable {
+            
+            guard let routeDescription = userInfo[AVAudioSessionRouteChangePreviousRouteKey] as? AVAudioSessionRouteDescription,
+                let portDescription = routeDescription.outputs.first else {
+                    return
+            }
+            
+            /// 原设备为耳机则暂停
+            if portDescription.portType == .headphones {
+                stop()
+            }
+        }
+        
     }
 }
 
@@ -591,6 +667,7 @@ extension AudioPlayerController: AudioPlayerProtocol {
         }
     }
     
+    
     /// MARK - 从某个进度开始播放
     public func setPlayerProgress(_ progress: Float) {
         
@@ -613,5 +690,26 @@ extension AudioPlayerController: AudioPlayerProtocol {
         if playRate < 0.5 { temPlayRate = 0.5 }
         if playRate > 2.0 { temPlayRate = 2.0 }
         self.audioStream.setPlayRate(temPlayRate)
+    }
+    
+    /// MARK - 删除所有缓存(目前还不支持单个删除)
+    public func removeCache() throws {
+        
+        if isPlaying() {
+            //正在播放不能删除缓存
+            throw NSError(domain: "com.mike.music", code: 9, userInfo: nil)
+        }
+        
+        DispatchQueue.main.async {
+            
+            let deletePath: (_ path: String) -> Void = { path in
+                let path = "\(self.cacheDirectory!)/\(path)"
+                try? FileManager.default.removeItem(atPath: path)
+            }
+            
+            let _ = try? FileManager.default.contentsOfDirectory(atPath: self.cacheDirectory)
+                .filter { $0.hasPrefix("FSCache-") }
+                .map(deletePath)
+        }
     }
 }

@@ -77,4 +77,7 @@ public protocol AudioPlayerProtocol {
     
     /// MARK - 设置播放速率 0.5 - 2.0， 1.0是正常速率
     func setPlayerPlayRate(_ playRate: Float)
+    
+    /// MARK - 删除缓存
+    func removeCache() throws
 }
