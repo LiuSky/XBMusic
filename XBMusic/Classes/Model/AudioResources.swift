@@ -13,4 +13,18 @@ public protocol AudioResources {
     
     /// 播放地址
     var audioUrl: URL { get }
+    
+    /// 缓存是否启用
+    var cacheEnabled: Bool { get }
+}
+
+
+
+// MARK: - Extension
+extension AudioResources {
+    
+    /// 默认缓存
+    public var cacheEnabled: Bool {
+       return true
+    }
 }

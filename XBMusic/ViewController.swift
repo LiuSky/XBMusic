@@ -104,10 +104,11 @@ final class ViewController: UIViewController {
 // MARK: - AudioPlayerControllerDelegate
 extension ViewController: AudioPlayerControllerDelegate {
     
-    
-    func audioController(_ audioController: AudioPlayerController, statusChanged state: AudioPlayerState) {
+    func audioController(_ audioController: AudioPlayerController, statusChanged state: AudioPlayerState, resources: AudioResources?) {
         debugPrint(state)
+        debugPrint(resources)
     }
+    
     
     func audioController(_ audioController: AudioPlayerController, currentTime: TimeInterval, progress: Float) {
         debugPrint("当前播放时间:\(currentTime.timeMsString)")

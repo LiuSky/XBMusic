@@ -30,7 +30,7 @@ final class AudioStreamProxy: NSObject {
         
         //禁用音频流的音频会话处理;音频控制器处理它
         config.automaticAudioSessionHandlingEnabled = false
-        
+        config.cacheEnabled = self.audioController?.currentPlaylistItem?.cacheEnabled ?? false
         let temAudioStream = FSAudioStream(configuration: config)!
         if self.audioController?.needToSetVolume ?? false,
             let outputVolume = self.audioController?.outputVolume {

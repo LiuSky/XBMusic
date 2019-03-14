@@ -19,8 +19,9 @@ public protocol AudioPlayerControllerDelegate: NSObjectProtocol {
     /// - Parameters:
     ///   - audioController: audioController
     ///   - state: AudioPlayerState
+    ///   - resources: AudioResources
     /// - Returns: return value description
-    func audioController(_ audioController: AudioPlayerController, statusChanged state: AudioPlayerState)
+    func audioController(_ audioController: AudioPlayerController, statusChanged state: AudioPlayerState, resources: AudioResources?)
     
 
     /// 播放时间（单位：毫秒)、总时间（单位：毫秒）、进度（播放时间 / 总时间）

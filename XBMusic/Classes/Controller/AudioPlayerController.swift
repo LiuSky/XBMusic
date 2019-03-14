@@ -40,9 +40,6 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     /// 需要设置音量(默认为false)
     private(set) var needToSetVolume: Bool = false
     
-    /// 准备播放
-    private var readyToPlay: Bool = false
-    
     /// 正在进行歌曲切换
     private var songSwitchInProgress: Bool = false
     
@@ -89,13 +86,12 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     
     /// MARK - 释放
     deinit {
+        
         removeObserver()
         streams.forEach { $0.deactivate() }
         setActive(false)
         stopPlayerTimer()
         stopBufferTimer()
-        playTimer?.invalidate()
-        bufferTimer?.invalidate()
         debugPrint("释放音频播放控制器")
     }
 }
@@ -135,8 +131,7 @@ extension AudioPlayerController {
         if state == .fsAudioStreamRetrievingURL {
             
             playerState = .loading
-            delegate?.audioController(self, statusChanged: playerState)
-            
+            delegate?.audioController(self, statusChanged: playerState, resources: currentPlaylistItem)
         } else if state == .fsAudioStreamBuffering {
             
             songSwitchInProgress = false
@@ -147,7 +142,7 @@ extension AudioPlayerController {
             
             bufferState = .buffering
             playerState = .buffering
-            delegate?.audioController(self, statusChanged: playerState)
+            delegate?.audioController(self, statusChanged: playerState, resources: currentPlaylistItem)
             
         } else if state == .fsAudioStreamSeeking {
             return
@@ -159,20 +154,20 @@ extension AudioPlayerController {
                 // 播放进度以及时间进度定时器启用
                 startPlayerTimer()
                 playerState = .playing
-                delegate?.audioController(self, statusChanged: playerState)
+                delegate?.audioController(self, statusChanged: playerState, resources: currentPlaylistItem)
             }
             
         } else if state == .fsAudioStreamPaused {
             
             playerState = .paused
-            delegate?.audioController(self, statusChanged: playerState)
+            delegate?.audioController(self, statusChanged: playerState, resources: currentPlaylistItem)
             //暂停的话,播放进度以及时间进度定时器停用
             stopPlayerTimer()
         } else if state == .fsAudioStreamStopped && !songSwitchInProgress {
             
             debugPrint("没有下一个播放列表项。音频才会停止")
             playerState = .ended
-            delegate?.audioController(self, statusChanged: playerState)
+            delegate?.audioController(self, statusChanged: playerState, resources: currentPlaylistItem)
             //歌曲全部播放完成的话
             stopPlayerTimer()
             setActive(false)
@@ -181,11 +176,11 @@ extension AudioPlayerController {
             currentPlaylistItemIndex = currentPlaylistItemIndex + 1
             songSwitchInProgress = true
             playerState = .switchSong
-            delegate?.audioController(self, statusChanged: playerState)
+            delegate?.audioController(self, statusChanged: playerState, resources: currentPlaylistItem)
             play()
         } else if state == .fsAudioStreamFailed {
             playerState = .error
-            delegate?.audioController(self, statusChanged: playerState)
+            delegate?.audioController(self, statusChanged: playerState, resources: currentPlaylistItem)
             setActive(false)
         } else if state == .fsAudioStreamEndOfFile {
             
@@ -223,17 +218,14 @@ extension AudioPlayerController {
 extension AudioPlayerController {
     
     /// MARK - 获取当前播放的项
-    private var currentPlaylistItem: AudioResources? {
+    var currentPlaylistItem: AudioResources? {
         
-        if readyToPlay {
-            if playlistItems.count > 0 {
-                let playlistItem = playlistItems[currentPlaylistItemIndex]
-                return playlistItem
-            } else {
-                return nil
-            }
+        if playlistItems.count > 0 {
+            let playlistItem = playlistItems[currentPlaylistItemIndex]
+            return playlistItem
+        } else {
+            return nil
         }
-        return nil
     }
     
     
@@ -394,7 +386,6 @@ extension AudioPlayerController: AudioPlayerProtocol {
         
         audioStream.stop()
         currentPlaylistItemIndex = index
-        readyToPlay = true
         deactivateInactivateStreams(index)
         play()
         
