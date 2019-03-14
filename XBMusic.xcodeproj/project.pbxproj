@@ -22,6 +22,9 @@
 		3333B7262238989E00245D49 /* AudioStreamProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3333B7252238989E00245D49 /* AudioStreamProxy.swift */; };
 		3333B7282238DCDF00245D49 /* AudioPlayerControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3333B7272238DCDF00245D49 /* AudioPlayerControllerDelegate.swift */; };
 		3333B72A2238F28300245D49 /* TimeInterval+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3333B7292238F28300245D49 /* TimeInterval+.swift */; };
+		334212612239E3B100E981C0 /* WeakProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 334212602239E3B100E981C0 /* WeakProxy.swift */; };
+		334212632239E46300E981C0 /* AViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 334212622239E46300E981C0 /* AViewController.swift */; };
+		334212652239EFC100E981C0 /* AudioBufferState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 334212642239EFC100E981C0 /* AudioBufferState.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +44,9 @@
 		3333B7252238989E00245D49 /* AudioStreamProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioStreamProxy.swift; sourceTree = "<group>"; };
 		3333B7272238DCDF00245D49 /* AudioPlayerControllerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerControllerDelegate.swift; sourceTree = "<group>"; };
 		3333B7292238F28300245D49 /* TimeInterval+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+.swift"; sourceTree = "<group>"; };
+		334212602239E3B100E981C0 /* WeakProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeakProxy.swift; sourceTree = "<group>"; };
+		334212622239E46300E981C0 /* AViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AViewController.swift; sourceTree = "<group>"; };
+		334212642239EFC100E981C0 /* AudioBufferState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioBufferState.swift; sourceTree = "<group>"; };
 		4FECAB252320DA530828D2D6 /* Pods-XBMusic.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-XBMusic.release.xcconfig"; path = "Target Support Files/Pods-XBMusic/Pods-XBMusic.release.xcconfig"; sourceTree = "<group>"; };
 		91EDA0B7532CF8395AA5D1C6 /* Pods-XBMusic.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-XBMusic.debug.xcconfig"; path = "Target Support Files/Pods-XBMusic/Pods-XBMusic.debug.xcconfig"; sourceTree = "<group>"; };
 		D49F015F61EBCD7B075D95EE /* Pods_XBMusic.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_XBMusic.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -82,6 +88,7 @@
 				332F47B922379D7D00F625BE /* Classes */,
 				332F47A722379D1E00F625BE /* AppDelegate.swift */,
 				332F47A922379D1E00F625BE /* ViewController.swift */,
+				334212622239E46300E981C0 /* AViewController.swift */,
 				332F47AB22379D1E00F625BE /* Main.storyboard */,
 				332F47AE22379D2000F625BE /* Assets.xcassets */,
 				332F47B022379D2000F625BE /* LaunchScreen.storyboard */,
@@ -106,6 +113,7 @@
 			children = (
 				332F47BD22379DC500F625BE /* AudioSessionProtocol.swift */,
 				3333B7292238F28300245D49 /* TimeInterval+.swift */,
+				334212602239E3B100E981C0 /* WeakProxy.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -134,6 +142,7 @@
 				332F47C222379DF700F625BE /* AudioResources.swift */,
 				332F47C422379F2200F625BE /* AudioPlayerState.swift */,
 				3333B7232238920600245D49 /* AudioPlayerMode.swift */,
+				334212642239EFC100E981C0 /* AudioBufferState.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -279,6 +288,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				334212652239EFC100E981C0 /* AudioBufferState.swift in Sources */,
+				334212612239E3B100E981C0 /* WeakProxy.swift in Sources */,
 				332F47AA22379D1E00F625BE /* ViewController.swift in Sources */,
 				332F47C72237A2A900F625BE /* AudioPlayerController.swift in Sources */,
 				3333B7282238DCDF00245D49 /* AudioPlayerControllerDelegate.swift in Sources */,
@@ -290,6 +301,7 @@
 				3333B722223890D600245D49 /* AudioPlayerProtocol.swift in Sources */,
 				332F47A822379D1E00F625BE /* AppDelegate.swift in Sources */,
 				3333B7262238989E00245D49 /* AudioStreamProxy.swift in Sources */,
+				334212632239E46300E981C0 /* AViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

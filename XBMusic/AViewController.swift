@@ -1,16 +1,14 @@
 //
-//  ViewController.swift
+//  AViewController.swift
 //  XBMusic
 //
-//  Created by xiaobin liu on 2019/3/12.
+//  Created by xiaobin liu on 2019/3/14.
 //  Copyright © 2019 Sky. All rights reserved.
 //
 
 import UIKit
 
-
-/// MARK - 音频播放Demo
-final class ViewController: UIViewController {
+class AViewController: UIViewController {
 
     /// 上一首按钮
     private lazy var prebutton: UIButton = {
@@ -61,6 +59,7 @@ final class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.view.backgroundColor = UIColor.white
         self.configView()
     }
     
@@ -72,12 +71,12 @@ final class ViewController: UIViewController {
         view.addSubview(nextbutton)
         view.addSubview(playbutton)
     }
-
+    
     /// 上一首
     @objc private func eventForPre() {
-        //let vc = AViewController()
-        ///self.navigationController?.pushViewController(vc, animated: true)
-        audioPlayerController.playPreviousItem()
+       // let vc = AViewController()
+       // self.navigationController?.pushViewController(vc, animated: true)
+       audioPlayerController.playPreviousItem()
     }
     
     /// 下一首
@@ -98,11 +97,15 @@ final class ViewController: UIViewController {
             playbutton.setTitle("暂停", for: .normal)
         }
     }
+    
+    deinit {
+        debugPrint("释放测试页面")
+    }
 }
 
 
 // MARK: - AudioPlayerControllerDelegate
-extension ViewController: AudioPlayerControllerDelegate {
+extension AViewController: AudioPlayerControllerDelegate {
     
     
     func audioController(_ audioController: AudioPlayerController, statusChanged state: AudioPlayerState) {
@@ -122,13 +125,3 @@ extension ViewController: AudioPlayerControllerDelegate {
         debugPrint("缓存进度:\(bufferProgress)")
     }
 }
-
-
-// MARK: - AudioResources
-extension String: AudioResources {
-    
-    public var audioUrl: URL {
-        return URL(string: self.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
-    }
-}
-

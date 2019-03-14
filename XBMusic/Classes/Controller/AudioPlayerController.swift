@@ -49,15 +49,17 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     /// 输出音量(默认1)
     private(set) var outputVolume: Float = 1.0
     
-    /// 播放时间刷新率
-    private var playDisplayLink: CADisplayLink?
+    /// 播放时间进度定时器
+    private var playTimer: Timer?
     
     /// 缓冲状态定时器
-    private var bufferTimer: CADisplayLink?
+    private var bufferTimer: Timer?
     
     /// 播放状态
     private(set) var playerState: AudioPlayerState = .none
     
+    /// 缓冲状态
+    private(set) var bufferState: AudioBufferState = .none
     
     /// 初始化
     public override init() {
@@ -92,6 +94,9 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
         setActive(false)
         stopPlayerTimer()
         stopBufferTimer()
+        playTimer?.invalidate()
+        bufferTimer?.invalidate()
+        debugPrint("释放音频播放控制器")
     }
 }
 
@@ -128,16 +133,22 @@ extension AudioPlayerController {
         }
         
         if state == .fsAudioStreamRetrievingURL {
+            
             playerState = .loading
             delegate?.audioController(self, statusChanged: playerState)
+            
         } else if state == .fsAudioStreamBuffering {
+            
             songSwitchInProgress = false
             if automaticAudioSessionHandlingEnabled {
                 setCategory(AVAudioSession.Category.playback)
             }
             setActive(true)
+            
+            bufferState = .buffering
             playerState = .buffering
             delegate?.audioController(self, statusChanged: playerState)
+            
         } else if state == .fsAudioStreamSeeking {
             return
         } else if state == .fsAudioStreamPlaying {
@@ -145,19 +156,24 @@ extension AudioPlayerController {
             let totalTime = self.audioStream.duration.playbackTimeInSeconds * 1000
             delegate?.audioController(self, totalTime: TimeInterval(totalTime))
             if playerState != .playing {
+                // 播放进度以及时间进度定时器启用
                 startPlayerTimer()
                 playerState = .playing
                 delegate?.audioController(self, statusChanged: playerState)
             }
+            
         } else if state == .fsAudioStreamPaused {
+            
             playerState = .paused
             delegate?.audioController(self, statusChanged: playerState)
+            //暂停的话,播放进度以及时间进度定时器停用
             stopPlayerTimer()
         } else if state == .fsAudioStreamStopped && !songSwitchInProgress {
             
             debugPrint("没有下一个播放列表项。音频才会停止")
             playerState = .ended
             delegate?.audioController(self, statusChanged: playerState)
+            //歌曲全部播放完成的话
             stopPlayerTimer()
             setActive(false)
         } else if state == .fsAudioStreamPlaybackCompleted && hasNextItem() {
@@ -260,16 +276,19 @@ extension AudioPlayerController {
     /// 开始播放定定时器
     private func startPlayerTimer() {
         
-        playDisplayLink?.invalidate()
-        playDisplayLink = CADisplayLink(target: self, selector: #selector(updateTime))
-        playDisplayLink?.frameInterval = 60
-        playDisplayLink?.add(to: RunLoop.current, forMode: .common)
+        playTimer?.invalidate()
+        playTimer = Timer(timeInterval: 1,
+                          target: WeakProxy(target: self),
+                          selector: #selector(updateTime),
+                          userInfo: nil,
+                          repeats: true)
+        RunLoop.current.add(playTimer!, forMode: .common)
     }
     
     
     /// 停止播放定时器
     private func stopPlayerTimer() {
-        playDisplayLink?.invalidate()
+        playTimer?.invalidate()
     }
     
     
@@ -290,11 +309,14 @@ extension AudioPlayerController {
     
     /// 开始进度定时器
     private func startBufferTimer() {
-        
+
         bufferTimer?.invalidate()
-        bufferTimer = CADisplayLink(target: self, selector: #selector(updateBuffer))
-        bufferTimer?.frameInterval = 6
-        bufferTimer?.add(to: RunLoop.current, forMode: .common)
+        bufferTimer = Timer(timeInterval: 0.5,
+                            target: WeakProxy(target: self),
+                            selector: #selector(updateBuffer),
+                            userInfo: nil,
+                            repeats: true)
+        RunLoop.current.add(bufferTimer!, forMode: .common)
     }
     
     
@@ -322,6 +344,10 @@ extension AudioPlayerController {
                 self.stopBufferTimer()
                 // 这里把进度设置为1，防止进度条出现不准确的情况
                 bufferProgress = 1.0
+                self.bufferState = .finished
+                
+            } else {
+                self.bufferState = .buffering
             }
             self.delegate?.audioController(self, bufferProgress: bufferProgress)
         }
@@ -496,7 +522,12 @@ extension AudioPlayerController: AudioPlayerProtocol {
         } else {
             audioStream.play()
         }
-        startBufferTimer()
+        
+        /// 如果缓冲未完成
+        if bufferState != .finished {
+            bufferState = .none
+            startBufferTimer()
+        }
     }
     
     /// MARK - 停止播放
