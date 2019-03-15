@@ -22,6 +22,7 @@
 - [x] 将一个项目添加到特定位置的播放列表中
 - [x] 将已在播放列表中的项目移动到播放列表中的不同位置
 - [x] 替换播放列表项等
+- [x] 锁屏控制操作
 - [x] interruptionNotification, routeChangeNotification 打断音频通知处理
 
 
