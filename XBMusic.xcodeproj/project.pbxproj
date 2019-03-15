@@ -17,6 +17,7 @@
 		332F47C322379DF700F625BE /* AudioResources.swift in Sources */ = {isa = PBXBuildFile; fileRef = 332F47C222379DF700F625BE /* AudioResources.swift */; };
 		332F47C522379F2200F625BE /* AudioPlayerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 332F47C422379F2200F625BE /* AudioPlayerState.swift */; };
 		332F47C72237A2A900F625BE /* AudioPlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 332F47C62237A2A900F625BE /* AudioPlayerController.swift */; };
+		332F6D15223B9449004D868D /* AudioLockScreenController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 332F6D14223B9449004D868D /* AudioLockScreenController.swift */; };
 		3333B722223890D600245D49 /* AudioPlayerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3333B721223890D600245D49 /* AudioPlayerProtocol.swift */; };
 		3333B7242238920600245D49 /* AudioPlayerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3333B7232238920600245D49 /* AudioPlayerMode.swift */; };
 		3333B7262238989E00245D49 /* AudioStreamProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3333B7252238989E00245D49 /* AudioStreamProxy.swift */; };
@@ -38,6 +39,7 @@
 		332F47C222379DF700F625BE /* AudioResources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioResources.swift; sourceTree = "<group>"; };
 		332F47C422379F2200F625BE /* AudioPlayerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerState.swift; sourceTree = "<group>"; };
 		332F47C62237A2A900F625BE /* AudioPlayerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerController.swift; sourceTree = "<group>"; };
+		332F6D14223B9449004D868D /* AudioLockScreenController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLockScreenController.swift; sourceTree = "<group>"; };
 		3333B721223890D600245D49 /* AudioPlayerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerProtocol.swift; sourceTree = "<group>"; };
 		3333B7232238920600245D49 /* AudioPlayerMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerMode.swift; sourceTree = "<group>"; };
 		3333B7252238989E00245D49 /* AudioStreamProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioStreamProxy.swift; sourceTree = "<group>"; };
@@ -129,6 +131,7 @@
 				3333B721223890D600245D49 /* AudioPlayerProtocol.swift */,
 				3333B7252238989E00245D49 /* AudioStreamProxy.swift */,
 				3333B7272238DCDF00245D49 /* AudioPlayerControllerDelegate.swift */,
+				332F6D14223B9449004D868D /* AudioLockScreenController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -297,6 +300,7 @@
 				3333B7242238920600245D49 /* AudioPlayerMode.swift in Sources */,
 				3333B72A2238F28300245D49 /* TimeInterval+.swift in Sources */,
 				332F47BE22379DC500F625BE /* AudioSessionProtocol.swift in Sources */,
+				332F6D15223B9449004D868D /* AudioLockScreenController.swift in Sources */,
 				332F47C522379F2200F625BE /* AudioPlayerState.swift in Sources */,
 				3333B722223890D600245D49 /* AudioPlayerProtocol.swift in Sources */,
 				332F47A822379D1E00F625BE /* AppDelegate.swift in Sources */,
