@@ -391,8 +391,8 @@ extension AudioPlayerController {
         } else {
             
             let previous = idx - 1
-            if previous == 0  {
-                return randomIndexs[randomIndexs.count]
+            if previous < 0  {
+                return randomIndexs[randomIndexs.count-1]
             } else {
                 return randomIndexs[previous]
             }

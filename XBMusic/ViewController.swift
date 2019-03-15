@@ -15,6 +15,12 @@ final class ViewController: UIViewController {
     /// 列表
     private lazy var tableView: UITableView = {
         let temTableView = UITableView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 400))
+        temTableView.backgroundColor = UIColor.white
+        temTableView.dataSource = self
+        temTableView.delegate = self
+        temTableView.rowHeight = 50
+        temTableView.register(UITableViewCell.self, forCellReuseIdentifier: String(describing: UITableViewCell.self))
+        temTableView.tableFooterView = UIView()
         return temTableView
     }()
     
@@ -23,8 +29,8 @@ final class ViewController: UIViewController {
     private lazy var modebutton: UIButton = {
         let temButton = UIButton(type: .custom)
         temButton.backgroundColor = UIColor.red
-        temButton.frame = CGRect(x: (self.view.frame.width - 70 * 4 - 10 * 3)/2, y: self.view.frame.height - 100, width: 70, height: 50)
-        temButton.setTitle("循环", for: .normal)
+        temButton.frame = CGRect(x: 10, y: self.view.frame.height - 100, width: 100, height: 50)
+        temButton.setTitle(AudioPlayerMode.loop.description, for: .normal)
         temButton.setTitleColor(UIColor.white, for: .normal)
         temButton.addTarget(self, action: #selector(eventForMode), for: .touchUpInside)
         return temButton
@@ -87,13 +93,13 @@ final class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.configView()
-        
     }
     
     
     /// 配置View
     private func configView() {
         
+        view.addSubview(tableView)
         view.addSubview(modebutton)
         view.addSubview(prebutton)
         view.addSubview(nextbutton)
@@ -103,6 +109,15 @@ final class ViewController: UIViewController {
     /// 模式切换
     @objc private func eventForMode() {
         
+        switch audioPlayerController.playerMode {
+        case .loop:
+            audioPlayerController.playerMode = .one
+        case .one:
+            audioPlayerController.playerMode = .random
+        case .random:
+            audioPlayerController.playerMode = .loop
+        }
+        modebutton.setTitle(audioPlayerController.playerMode.description, for: .normal)
     }
 
     /// 上一首
@@ -153,6 +168,29 @@ extension ViewController: AudioPlayerControllerDelegate {
         debugPrint("缓存进度:\(bufferProgress)")
     }
 }
+
+
+// MARK: - UITableViewDataSource
+extension ViewController: UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return urls.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: UITableViewCell.self))!
+        cell.textLabel?.text = urls[indexPath.row].name
+        return cell
+    }
+}
+
+
+// MARK: - UITableViewDelegate
+extension ViewController: UITableViewDelegate {
+    
+}
+
 
 
 /// MARK - 测试结构体

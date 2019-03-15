@@ -2,23 +2,19 @@ PODS:
   - FreeStreamer (3.9.3):
     - Reachability (~> 3.0)
   - Reachability (3.2)
-  - SnapKit (4.2.0)
 
 DEPENDENCIES:
   - FreeStreamer (~> 3.9.3)
-  - SnapKit (~> 4.2.0)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - FreeStreamer
     - Reachability
-    - SnapKit
 
 SPEC CHECKSUMS:
   FreeStreamer: 8d52b299dc97e557ff156480bf86a666165bd1e5
   Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
-  SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
 
-PODFILE CHECKSUM: d21f2de2223e56aae15a5b39900d4db4ff1b8c6a
+PODFILE CHECKSUM: 826e648834655dcdee26fa0afea726a952c472dc
 
 COCOAPODS: 1.6.0

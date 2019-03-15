@@ -9,7 +9,4 @@ use_frameworks!
 target :XBMusic  do
 
 pod 'FreeStreamer', '~> 3.9.3'
-
-#Frame
-pod 'SnapKit', '~> 4.2.0'
 end
