@@ -33,9 +33,6 @@ public enum AudioPlayerState: Int {
     ///  停止
     case stopped
 
-    ///  结束（播放完成）
-    case ended
-
     ///  错误
     case error
 }
@@ -56,13 +53,11 @@ extension AudioPlayerState: CustomStringConvertible {
         case .playing:
             return "播放"
         case .paused:
-            return "暂停"
+            return "暂停（播放器主动发出或被其他播放打断）"
         case .switchSong:
             return "切换"
         case .stopped:
-            return "停止（播放器主动发出：如播放被打断）"
-        case .ended:
-            return "结束（播放完成）"
+            return "停止"
         case .error:
             return "错误"
         }

@@ -27,15 +27,30 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     /// 缓存路径(默认路径DocumentDirectory)
     public var cacheDirectory: String!
     
+    /// 当前播放的项
+    public var currentPlaylistItem: AudioResources? {
+        
+        if playlistItems.count > 0 {
+            let playlistItem = playlistItems[currentPlaylistItemIndex]
+            return playlistItem
+        } else {
+            return nil
+        }
+    }
+    
+    /// 播放模式(默认是循环)
+    public var playerMode: AudioPlayerMode = AudioPlayerMode.loop
+    
+    
     /// MARK - private
     /// 当前播放列表索引
     private var currentPlaylistItemIndex: Int = 0
     
     /// 音频流代理数组
-    private lazy var streams: [AudioStreamProxy] = []
+    private var streams: [AudioStreamProxy] = []
     
     /// 播放列表数组
-    private(set) lazy var playlistItems: [AudioResources] = []
+    private(set) var playlistItems: [AudioResources] = []
     
     /// 需要设置音量(默认为false)
     private(set) var needToSetVolume: Bool = false
@@ -58,15 +73,13 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     /// 缓冲状态
     private(set) var bufferState: AudioBufferState = .none
     
+    /// 随机索引
+    private lazy var randomIndexs: [Int] = []
+    
     /// 初始化
     public override init() {
         super.init()
-        
-       let paths = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)
-        if paths.count > 0 {
-            cacheDirectory = paths[0]
-        }
-        
+        configCachePath()
         addObserver()
         addInterruptionAndRouteChangeNotification()
     }
@@ -174,14 +187,13 @@ extension AudioPlayerController {
         } else if state == .fsAudioStreamStopped && !songSwitchInProgress {
             
             debugPrint("没有下一个播放列表项。音频才会停止")
-            playerState = .ended
+            playerState = .stopped
             delegate?.audioController(self, statusChanged: playerState, resources: currentPlaylistItem)
             //歌曲全部播放完成的话
             stopPlayerTimer()
             setActive(false)
-        } else if state == .fsAudioStreamPlaybackCompleted && hasNextItem() {
-            ///这边记得修改播放模式
-            currentPlaylistItemIndex = currentPlaylistItemIndex + 1
+        } else if state == .fsAudioStreamPlaybackCompleted && (hasNextItem() || playerMode == .one) {
+            currentPlaylistItemIndex = calculatePlayer(playerMode, true)
             songSwitchInProgress = true
             playerState = .switchSong
             delegate?.audioController(self, statusChanged: playerState, resources: currentPlaylistItem)
@@ -196,27 +208,31 @@ extension AudioPlayerController {
             updateBuffer()
             stopBufferTimer()
             
-            /// 判断是否预加载下一个
-            if !preloadNextPlaylistItemAutomatically {
+            /* 1.这边会出现一个问题如果是单曲循环的话，下一个缓存的对象还是本身，
+                 会出现播放器播放不出来的情况所以这边做一个判断
+               2. 判断是否预加载下一个
+             */
+            guard playerMode != .one,
+                  preloadNextPlaylistItemAutomatically == true else {
                 return
             }
             
-            /// 判断是否有下一个，如果有的话，进入提前预加载
-            if hasNextItem() {
                 
-                /// 这边记得修改播放模式
-                let proxy = streams[currentPlaylistItemIndex + 1]
-                let nextStream = proxy.audioStream
-                
-                if let temDelegate = delegate {
-                    if temDelegate.audioController(self, allowPreloadingFor: nextStream) {
+                /// 判断是否有下一个，如果有的话，进入提前预加载
+                if hasNextItem() {
+                    
+                    let proxy = streams[calculatePlayer(playerMode, true)]
+                    let nextStream = proxy.audioStream
+                    
+                    if let temDelegate = delegate {
+                        if temDelegate.audioController(self, allowPreloadingFor: nextStream) {
+                            nextStream.preload()
+                        }
+                    } else {
                         nextStream.preload()
                     }
-                } else {
-                    nextStream.preload()
+                    delegate?.audioController(self, preloadStartedFor: nextStream)
                 }
-                delegate?.audioController(self, preloadStartedFor: nextStream)
-            }
         }
     }
 }
@@ -285,27 +301,120 @@ extension AudioPlayerController {
                 stop()
             }
         }
-        
     }
 }
+
+
+// MARK: - 播放模式算法
+extension AudioPlayerController {
+    
+    /// 计算播放索引
+    /// 1.循环播放(当播放到最后一个的时候会重置列表,然后从第一个重新开始)
+    /// 2.单曲循环(不断的重复播放)
+    /// 3.随机播放(每次被播放过的歌曲的索引会被移除,直到移除到最后一个。然后重新开始)
+    /// - Parameters:
+    ///   - mode: 播放模式
+    ///   - hasNextItem: 是否是下一曲
+    /// - Returns: Int
+    open func calculatePlayer(_ mode: AudioPlayerMode, _ hasNextItem: Bool) -> Int {
+        
+        switch mode {
+        case .loop:
+            return calculateLoop(hasNextItem)
+        case .one:
+            return calculateOne()
+        case .random:
+            return calculateRandom(hasNextItem)
+        }
+    }
+    
+    
+    /// 计算循环
+    ///
+    /// - Parameter hasNextItem: 是否是下一曲
+    /// - Returns: Int
+    private func calculateLoop(_ hasNextItem: Bool) -> Int {
+        
+        if hasNextItem {
+            
+            if currentPlaylistItemIndex + 1 == playlistItems.count {
+                /// 重置播放列表为0
+                return 0
+            } else {
+                return currentPlaylistItemIndex + 1
+            }
+            
+        } else {
+            
+            if currentPlaylistItemIndex == 0 {
+                /// 播放最后一首歌
+                return playlistItems.count - 1
+            } else {
+                return currentPlaylistItemIndex - 1
+            }
+        }
+    }
+    
+    
+    /// 计算单曲循环
+    ///
+    /// - Returns: <#return value description#>
+    private func calculateOne() -> Int {
+        return currentPlaylistItemIndex
+    }
+    
+    
+    /// 计算随机
+    ///
+    /// - Returns: <#return value description#>
+    private func calculateRandom(_ hasNextItem: Bool) -> Int {
+        
+        /*
+         1.如果洗牌的数量与播放列表不相等
+         */
+        if randomIndexs.count != playlistItems.count {
+            randomIndexs = (0..<playlistItems.count).shuffled()
+        }
+        
+        /// 查找当前播放的索引位置
+        let idx = randomIndexs.firstIndex(of: currentPlaylistItemIndex)!
+        
+        if hasNextItem {
+           
+           let next = idx + 1
+           if next > playlistItems.count - 1 {
+              return randomIndexs[0]
+           } else {
+              return randomIndexs[next]
+           }
+            
+        } else {
+            
+            let previous = idx - 1
+            if previous == 0  {
+                return randomIndexs[randomIndexs.count]
+            } else {
+                return randomIndexs[previous]
+            }
+        }
+    }
+}
+
 
 
 // MARK: - private
 extension AudioPlayerController {
     
-    /// MARK - 获取当前播放的项
-    var currentPlaylistItem: AudioResources? {
+    /// 配置默认缓存路径
+    private func configCachePath() {
         
-        if playlistItems.count > 0 {
-            let playlistItem = playlistItems[currentPlaylistItemIndex]
-            return playlistItem
-        } else {
-            return nil
+        let paths = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)
+        if paths.count > 0 {
+            cacheDirectory = paths[0]
         }
     }
     
-    
-    /// MARK - 当前播放音频
+    /// 当前播放音频
     private var audioStream: FSAudioStream {
         
         let stream: FSAudioStream
@@ -320,7 +429,7 @@ extension AudioPlayerController {
     }
     
     
-    /// MARK - 赋值音频代理对象
+    /// 赋值音频代理对象
     private func assignmentStreams() {
         
         streams = playlistItems.map { model -> AudioStreamProxy in
@@ -330,7 +439,7 @@ extension AudioPlayerController {
         }
     }
     
-    /// MARK - 停用未激活的音频
+    /// 停用未激活的音频
     private func deactivateInactivateStreams(_ currentActiveStream: Int) {
         
         for (index, item) in streams.enumerated() {
@@ -461,6 +570,7 @@ extension AudioPlayerController: AudioPlayerProtocol {
         }
         
         audioStream.stop()
+        /// 这边记得修改播放模式
         currentPlaylistItemIndex = index
         deactivateInactivateStreams(index)
         play()
@@ -494,6 +604,7 @@ extension AudioPlayerController: AudioPlayerProtocol {
             return
         }
         
+        /// 这边记得修改播放模式
         playlistItems.insert(newItem, at: index)
         let proxy = AudioStreamProxy(audioController: self)
         proxy.url = newItem.audioUrl
@@ -516,6 +627,7 @@ extension AudioPlayerController: AudioPlayerProtocol {
             return
         }
         
+        /// 这边记得修改播放模式
         if from == currentPlaylistItemIndex {
             currentPlaylistItemIndex = to
         } else if from < currentPlaylistItemIndex && to > currentPlaylistItemIndex {
@@ -627,18 +739,16 @@ extension AudioPlayerController: AudioPlayerProtocol {
     
     /// MARK - 是否有下一个
     public func hasNextItem() -> Bool {
-        
-        /// 这边注意模式播放方式(后续添加)
-        return hasMultiplePlaylistItems() &&
-            currentPlaylistItemIndex + 1 < playlistItems.count
+        /// 目前市面上大部分都是可以无限循环的
+        return true
+        //return hasMultiplePlaylistItems() && currentPlaylistItemIndex + 1 < playlistItems.count
     }
     
     /// MARK - 是否有上一个
     public func hasPreviousItem() -> Bool {
-        
-        /// 这边注意模式播放方式(后续添加)
-        return hasMultiplePlaylistItems() &&
-               currentPlaylistItemIndex != 0
+        /// 目前市面上大部分都是可以无限循环的
+        return true
+        //return hasMultiplePlaylistItems() && currentPlaylistItemIndex != 0
     }
     
     /// MARK - 播放下一个
@@ -649,7 +759,7 @@ extension AudioPlayerController: AudioPlayerProtocol {
             songSwitchInProgress = true
             audioStream.stop()
             deactivateInactivateStreams(currentPlaylistItemIndex)
-            currentPlaylistItemIndex = currentPlaylistItemIndex + 1
+            currentPlaylistItemIndex = calculatePlayer(playerMode, true)
             play()
         }
     }
@@ -662,7 +772,7 @@ extension AudioPlayerController: AudioPlayerProtocol {
             songSwitchInProgress = true
             audioStream.stop()
             deactivateInactivateStreams(currentPlaylistItemIndex)
-            currentPlaylistItemIndex = currentPlaylistItemIndex - 1
+            currentPlaylistItemIndex = calculatePlayer(playerMode, false)
             play()
         }
     }

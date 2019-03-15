@@ -11,15 +11,46 @@ import UIKit
 
 /// MARK - 音频播放Demo
 final class ViewController: UIViewController {
-
+    
+    /// 列表
+    private lazy var tableView: UITableView = {
+        let temTableView = UITableView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 400))
+        return temTableView
+    }()
+    
+    
+    /// 模式按钮
+    private lazy var modebutton: UIButton = {
+        let temButton = UIButton(type: .custom)
+        temButton.backgroundColor = UIColor.red
+        temButton.frame = CGRect(x: (self.view.frame.width - 70 * 4 - 10 * 3)/2, y: self.view.frame.height - 100, width: 70, height: 50)
+        temButton.setTitle("循环", for: .normal)
+        temButton.setTitleColor(UIColor.white, for: .normal)
+        temButton.addTarget(self, action: #selector(eventForMode), for: .touchUpInside)
+        return temButton
+    }()
+    
+    
     /// 上一首按钮
     private lazy var prebutton: UIButton = {
         let temButton = UIButton(type: .custom)
         temButton.backgroundColor = UIColor.red
-        temButton.frame = CGRect(x: self.view.center.x/2 + 25, y: 100, width: 100, height: 50)
+        temButton.frame = CGRect(x: modebutton.frame.maxX + 10, y: modebutton.frame.origin.y, width: 70, height: 50)
         temButton.setTitle("上一首", for: .normal)
         temButton.setTitleColor(UIColor.white, for: .normal)
         temButton.addTarget(self, action: #selector(eventForPre), for: .touchUpInside)
+        return temButton
+    }()
+    
+    
+    /// 播放||暂停
+    private lazy var playbutton: UIButton = {
+        let temButton = UIButton(type: .custom)
+        temButton.backgroundColor = UIColor.red
+        temButton.frame = CGRect(x: prebutton.frame.maxX + 10, y: modebutton.frame.origin.y, width: 70, height: 50)
+        temButton.setTitle("播放", for: .normal)
+        temButton.setTitleColor(UIColor.white, for: .normal)
+        temButton.addTarget(self, action: #selector(eventForPlay), for: .touchUpInside)
         return temButton
     }()
     
@@ -28,21 +59,10 @@ final class ViewController: UIViewController {
     private lazy var nextbutton: UIButton = {
         let temButton = UIButton(type: .custom)
         temButton.backgroundColor = UIColor.red
-        temButton.frame = CGRect(x: prebutton.frame.origin.x, y: prebutton.frame.maxY + 50, width: 100, height: 50)
+        temButton.frame = CGRect(x: playbutton.frame.maxX + 10, y: modebutton.frame.origin.y, width: 70, height: 50)
         temButton.setTitle("下一首", for: .normal)
         temButton.setTitleColor(UIColor.white, for: .normal)
         temButton.addTarget(self, action: #selector(eventForNext), for: .touchUpInside)
-        return temButton
-    }()
-    
-    /// 播放||暂停
-    private lazy var playbutton: UIButton = {
-        let temButton = UIButton(type: .custom)
-        temButton.backgroundColor = UIColor.red
-        temButton.frame = CGRect(x: prebutton.frame.origin.x, y: nextbutton.frame.maxY + 50, width: 100, height: 50)
-        temButton.setTitle("播放", for: .normal)
-        temButton.setTitleColor(UIColor.white, for: .normal)
-        temButton.addTarget(self, action: #selector(eventForPlay), for: .touchUpInside)
         return temButton
     }()
     
@@ -54,23 +74,35 @@ final class ViewController: UIViewController {
     }()
     
     /// 播放资源
-    private lazy var urls = ["http://ali.ixy123.com/upload/article/20180807/20180807045343948_犟龟.mp3",
-                             "http://ali.ixy123.com/upload/article/20180717/20180717022859084_HAPPY DUCK.mp3",
-                             "http://ali.ixy123.com/upload/article/20180717/20180717024153893_THE HOKEY POKEY.mp3",
-                             "http://ali.ixy123.com/upload/article/20180326/20180326083839498_生气汤1.mp3",]
+    private lazy var urls = [Test(name: "犟龟",
+                                  url: "http://ali.ixy123.com/upload/article/20180807/20180807045343948_犟龟.mp3"),
+                             Test(name: "HAPPY DUCK",
+                                  url: "http://ali.ixy123.com/upload/article/20180717/20180717022859084_HAPPY DUCK.mp3"),
+                             Test(name: "HOKEY POKEY",
+                                  url: "http://ali.ixy123.com/upload/article/20180717/20180717024153893_THE HOKEY POKEY.mp3"),
+                             Test(name: "生气汤",
+                                  url: "http://ali.ixy123.com/upload/article/20180326/20180326083839498_生气汤1.mp3")
+        ]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.configView()
+        
     }
     
     
     /// 配置View
     private func configView() {
         
+        view.addSubview(modebutton)
         view.addSubview(prebutton)
         view.addSubview(nextbutton)
         view.addSubview(playbutton)
+    }
+    
+    /// 模式切换
+    @objc private func eventForMode() {
+        
     }
 
     /// 上一首
@@ -103,8 +135,8 @@ final class ViewController: UIViewController {
 extension ViewController: AudioPlayerControllerDelegate {
     
     func audioController(_ audioController: AudioPlayerController, statusChanged state: AudioPlayerState, resources: AudioResources?) {
+        self.navigationItem.title = (resources as! Test).name
         debugPrint(state)
-        debugPrint(resources ?? "")
     }
     
     
@@ -123,11 +155,15 @@ extension ViewController: AudioPlayerControllerDelegate {
 }
 
 
-// MARK: - AudioResources
-extension String: AudioResources {
+/// MARK - 测试结构体
+public struct Test {
     
-    public var audioUrl: URL {
-        return URL(string: self.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
-    }
+    let name: String
+    let url: String
 }
 
+extension Test: AudioResources {
+    public var audioUrl: URL {
+        return URL(string: url.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
+    }
+}
