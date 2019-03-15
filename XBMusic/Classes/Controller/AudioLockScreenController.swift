@@ -54,25 +54,25 @@ public class AudioLockScreenController: AudioSessionProtocol {
         //MPFeedbackCommand对象反映了当前App所播放的反馈状态. MPRemoteCommandCenter对象提供feedback对象用于对媒体文件进行喜欢, 不喜欢, 标记的操作. 效果类似于网易云音乐锁屏时的效果
         let commandCenter = MPRemoteCommandCenter.shared()
         
-        // 添加喜欢按钮
-        let likeCommand = commandCenter.likeCommand
-        likeCommand.isEnabled = true
-        likeCommand.localizedTitle = "喜欢"
-        likeCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
-            NotificationCenter.default.post(name: NSNotification.Name.AudioPlayerTask.like, object: nil)
-            return MPRemoteCommandHandlerStatus.success
-        }
+//        // 添加喜欢按钮
+//        let likeCommand = commandCenter.likeCommand
+//        likeCommand.isEnabled = true
+//        likeCommand.localizedTitle = "喜欢"
+//        likeCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
+//            NotificationCenter.default.post(name: NSNotification.Name.AudioPlayerTask.like, object: nil)
+//            return MPRemoteCommandHandlerStatus.success
+//        }
         
         
         // 添加不喜欢按钮,假装是"上一首"
-        let dislikeCommand = commandCenter.dislikeCommand
-        dislikeCommand.isEnabled = true
-        dislikeCommand.localizedTitle = "上一首"
-        dislikeCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
-            NotificationCenter.default.post(name: NSNotification.Name.AudioPlayerTask.previous, object: nil)
-            return MPRemoteCommandHandlerStatus.success
-        }
-        
+//        let dislikeCommand = commandCenter.dislikeCommand
+//        dislikeCommand.isEnabled = true
+//        dislikeCommand.localizedTitle = "上一首"
+//        dislikeCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
+//            NotificationCenter.default.post(name: NSNotification.Name.AudioPlayerTask.previous, object: nil)
+//            return MPRemoteCommandHandlerStatus.success
+//        }
+
         
         //commandCenter.togglePlayPauseCommand 耳机线控的暂停/播放
         commandCenter.pauseCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
@@ -101,11 +101,9 @@ public class AudioLockScreenController: AudioSessionProtocol {
         if #available(iOS 9.1, *) {
             commandCenter.changePlaybackPositionCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
                 
-                
                 guard let playbackPositionEvent = event as? MPChangePlaybackPositionCommandEvent else {
                     return MPRemoteCommandHandlerStatus.success
                 }
-                
                 NotificationCenter.default.post(name: NSNotification.Name.AudioPlayerTask.changeProgress, object: playbackPositionEvent.positionTime)
                 
                 return MPRemoteCommandHandlerStatus.success
