@@ -189,6 +189,9 @@ extension ViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension ViewController: UITableViewDelegate {
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        audioPlayerController.playItem(at: indexPath.row)
+    }
 }
 
 
