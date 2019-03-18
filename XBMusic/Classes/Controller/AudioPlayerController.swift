@@ -138,10 +138,10 @@ extension AudioPlayerController {
     @objc private func audioStreamStateDidChange(_ notification: Notification) {
         
         guard let object = notification.object as? FSAudioStream,
-              object == audioStream,
-              let userInfo = notification.userInfo,
-              let stateInt = userInfo[FSAudioStreamNotificationKey_State] as? Int,
-              let state = FSAudioStreamState(rawValue: stateInt) else {
+            object == audioStream,
+            let userInfo = notification.userInfo,
+            let stateInt = userInfo[FSAudioStreamNotificationKey_State] as? Int,
+            let state = FSAudioStreamState(rawValue: stateInt) else {
                 return
         }
         
@@ -204,31 +204,30 @@ extension AudioPlayerController {
             updateBuffer()
             stopBufferTimer()
             
-            /* 1.这边会出现一个问题如果是单曲循环的话，下一个缓存的对象还是本身，
-                 会出现播放器播放不出来的情况所以这边做一个判断
-               2. 判断是否预加载下一个
-             */
-            guard playerMode != .one,
-                  preloadNextPlaylistItemAutomatically == true else {
-                return
+            
+            ///判断是否预加载下一个
+            let proxy = streams[calculatePlayer(playerMode, true)]
+            
+            guard let temUrl = proxy.url,
+                temUrl.absoluteString != audioStream.url.absoluteString,
+                preloadNextPlaylistItemAutomatically == true else {
+                    return
             }
             
+            /// 判断是否有下一个，如果有的话，进入提前预加载
+            if hasNextItem() {
                 
-                /// 判断是否有下一个，如果有的话，进入提前预加载
-                if hasNextItem() {
-                    
-                    let proxy = streams[calculatePlayer(playerMode, true)]
-                    let nextStream = proxy.audioStream
-                    
-                    if let temDelegate = delegate {
-                        if temDelegate.audioController(self, allowPreloadingFor: nextStream) {
-                            nextStream.preload()
-                        }
-                    } else {
+                let nextStream = proxy.audioStream
+                
+                if let temDelegate = delegate {
+                    if temDelegate.audioController(self, allowPreloadingFor: nextStream) {
                         nextStream.preload()
                     }
-                    delegate?.audioController(self, preloadStartedFor: nextStream)
+                } else {
+                    nextStream.preload()
                 }
+                delegate?.audioController(self, preloadStartedFor: nextStream)
+            }
         }
     }
 }
@@ -369,13 +368,13 @@ extension AudioPlayerController {
         let idx = randomIndexs.firstIndex(of: currentPlaylistItemIndex)!
         
         if hasNextItem {
-           
-           let next = idx + 1
-           if next > playlistItems.count - 1 {
-              return randomIndexs[0]
-           } else {
-              return randomIndexs[next]
-           }
+            
+            let next = idx + 1
+            if next > playlistItems.count - 1 {
+                return randomIndexs[0]
+            } else {
+                return randomIndexs[next]
+            }
             
         } else {
             
@@ -454,7 +453,7 @@ extension AudioPlayerController {
         ///有几个注意点是，每次你暂停时需要保存当前的音乐播放进度和锁屏下进度光标的速度设置为接近0的数（0.00001），以便下次恢复播放时锁屏下进度光标位置能正常
         var info: [String: Any] = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
         info[MPNowPlayingInfoPropertyPlaybackRate] = NSNumber(value: 0.0)//进度光标的速度
-                info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = NSNumber(value: audioStream.currentTimePlayed.playbackTimeInSeconds)//当前已经播放时间
+        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = NSNumber(value: audioStream.currentTimePlayed.playbackTimeInSeconds)//当前已经播放时间
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
         
     }
@@ -583,7 +582,7 @@ extension AudioPlayerController {
     
     /// 开始进度定时器
     private func startBufferTimer() {
-
+        
         bufferTimer?.invalidate()
         bufferTimer = Timer(timeInterval: 0.5,
                             target: WeakProxy(target: self),
@@ -664,8 +663,8 @@ extension AudioPlayerController: AudioPlayerProtocol {
         
         let count = countOfItems()
         guard count != 0,
-              index < count else {
-            return
+            index < count else {
+                return
         }
         
         audioStream.stop()
@@ -749,8 +748,8 @@ extension AudioPlayerController: AudioPlayerProtocol {
         
         let count = countOfItems()
         guard count != 0,
-              index < count else {
-            return
+            index < count else {
+                return
         }
         
         // 如果物品当前正在播放，不允许更换
@@ -770,7 +769,7 @@ extension AudioPlayerController: AudioPlayerProtocol {
         
         let count = countOfItems()
         guard count != 0,
-              index < count else {
+            index < count else {
                 return
         }
         
@@ -922,3 +921,4 @@ extension AudioPlayerController: AudioPlayerProtocol {
         }
     }
 }
+
