@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -292,18 +292,11 @@
 			files = (
 			);
 			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-XBMusic/Pods-XBMusic-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/FreeStreamer/FreeStreamer.framework",
-				"${BUILT_PRODUCTS_DIR}/Reachability/Reachability.framework",
+				"${PODS_ROOT}/Target Support Files/Pods-XBMusic/Pods-XBMusic-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-			);
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FreeStreamer.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Reachability.framework",
+				"${PODS_ROOT}/Target Support Files/Pods-XBMusic/Pods-XBMusic-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -493,7 +486,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mike.XBMusic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -513,7 +506,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mike.XBMusic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

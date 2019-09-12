@@ -51,7 +51,7 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     internal var streams: [AudioStreamProxy] = []
     
     /// 播放列表数组
-    internal(set) var playlistItems: [AudioResources] = []
+    var playlistItems: [AudioResources] = []
     
     /// 需要设置音量(默认为false)
     private(set) var needToSetVolume: Bool = false
@@ -69,10 +69,10 @@ public class AudioPlayerController: NSObject, AudioSessionProtocol {
     private var bufferTimer: Timer?
     
     /// 播放状态
-    internal(set) var playerState: AudioPlayerState = .none
+    var playerState: AudioPlayerState = .none
     
     /// 缓冲状态
-    internal(set) var bufferState: AudioBufferState = .none
+    var bufferState: AudioBufferState = .none
     
     /// 随机索引
     internal lazy var randomIndexs: [Int] = []

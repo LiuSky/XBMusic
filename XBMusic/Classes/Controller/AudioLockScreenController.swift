@@ -14,7 +14,7 @@ import AVFoundation
 // MARK: - 音乐通知任务
 public extension Notification.Name {
     
-    public struct AudioPlayerTask {
+    struct AudioPlayerTask {
         
         /// 上一首通知
         public static let previous = Notification.Name("com.xb.audio.notification.name.previous")

@@ -40,6 +40,8 @@ extension AudioPlayerController {
                     return
             }
             play()
+        @unknown default:
+            fatalError()
         }
     }
     
